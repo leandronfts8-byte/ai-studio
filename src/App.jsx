@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import Header from "./components/Header";
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -18,15 +18,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800">
-        <div className="max-w-5xl mx-auto px-6 py-5">
-          <h1 className="text-3xl font-bold">🚀 AI Studio</h1>
-          <p className="text-slate-400">
-            Gere imagens com inteligência artificial
-          </p>
-        </div>
-      </header>
-
+      <Header />
       <main className="max-w-5xl mx-auto px-6 py-10">
         <div className="bg-slate-900 p-6 rounded-2xl">
           <textarea
