@@ -9,8 +9,8 @@ export default function App() {
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   function finalizarCarregamento() {
-  setLoading(false);
-}
+    setLoading(false);
+  }
   function gerarImagem() {
     if (!prompt.trim()) return;
 
@@ -19,23 +19,24 @@ export default function App() {
   }
 
   return (
-  <div className="min-h-screen bg-slate-950 text-white">
-    <Header />
+    <div className="min-h-screen bg-slate-950 text-white">
+      <Header />
 
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      <PromptBox
-        prompt={prompt}
-        setPrompt={setPrompt}
-        gerarImagem={gerarImagem}
-        loading={loading}
-      />
+      <main className="max-w-5xl mx-auto px-6 py-10">
+        <PromptBox
+          prompt={prompt}
+          setPrompt={setPrompt}
+          gerarImagem={gerarImagem}
+          loading={loading}
+        />
 
-      <ImageViewer
-        imageUrl={imageUrl}
-        prompt={prompt}
-        onImageLoad={finalizarCarregamento}
-      />
-    </main>
-  </div>
-);
+        <ImageViewer
+          imageUrl={imageUrl}
+          prompt={prompt}
+          loading={loading}
+          onImageLoad={finalizarCarregamento}
+        />
+      </main>
+    </div>
+  );
 }
