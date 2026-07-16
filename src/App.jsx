@@ -1,5 +1,8 @@
 import { useState } from "react";
 import Header from "./components/Header";
+import PromptBox from "./components/PromptBox";
+import { gerarImagemURL } from "./services/pollinations";
+
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -7,35 +10,21 @@ export default function App() {
   function gerarImagem() {
     if (!prompt.trim()) return;
 
-    const url =
-      "https://image.pollinations.ai/prompt/" +
-      encodeURIComponent(prompt) +
-      "?width=1024&height=1024&seed=" +
-      Date.now();
-
-    setImageUrl(url);
+    setImageUrl(gerarImagemURL(prompt));
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <Header />
+
       <main className="max-w-5xl mx-auto px-6 py-10">
-        <div className="bg-slate-900 p-6 rounded-2xl">
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Descreva a imagem..."
-            className="w-full h-36 rounded-xl bg-slate-800 p-4 border border-slate-700"
-          />
+         <PromptBox
+          prompt={prompt}
+          setPrompt={setPrompt}
+          gerarImagem={gerarImagem}
+        />
 
-          <button
-            onClick={gerarImagem}
-            className="mt-4 bg-blue-600 px-6 py-3 rounded-xl hover:bg-blue-700"
-          >
-            Gerar Imagem
-          </button>
-        </div>
-
+         
         <div className="mt-10 bg-slate-900 rounded-2xl p-6 min-h-[500px] flex items-center justify-center">
           {imageUrl ? (
             <img
