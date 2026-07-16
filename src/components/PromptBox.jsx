@@ -2,6 +2,7 @@ export default function PromptBox({
   prompt,
   setPrompt,
   gerarImagem,
+  loading,
 }) {
   return (
     <div className="bg-slate-900 p-6 rounded-2xl">
@@ -14,9 +15,10 @@ export default function PromptBox({
 
       <button
         onClick={gerarImagem}
-        className="mt-4 bg-blue-600 px-6 py-3 rounded-xl hover:bg-blue-700"
-      >
-        Gerar Imagem
+        disabled={loading}
+        className="mt-4 bg-blue-600 px-6 py-3 rounded-xl hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed transition"
+    >
+        {loading ? "Gerando..." : "Gerar Imagem"}
       </button>
     </div>
   );
