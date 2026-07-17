@@ -1,0 +1,17 @@
+export const prompts = [
+  "Gato astronauta em Marte",
+  "Castelo flutuando nas nuvens",
+  "Samurai cyberpunk",
+  "Floresta encantada com dragões",
+  "Robô tomando café em Paris",
+  "Cidade futurista ao pôr do sol",
+  "Lobo místico na neve",
+  "Pirata steampunk",
+  "Casa moderna no topo de uma montanha",
+  "Fênix de fogo voando sobre um vulcão",
+  "Cachorro detetive estilo noir",
+  "Biblioteca mágica infinita",
+  "Navio pirata voador",
+  "Templo antigo coberto por vegetação",
+  "Metrópole futurista iluminada por neon",
+];
