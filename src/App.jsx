@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 import Header from "./components/Header";
 import PromptBox from "./components/PromptBox";
 import { gerarImagemURL } from "./services/pollinations";
 import ImageViewer from "./components/ImageViewer";
 import DownloadButton from "./components/DownloadButton";
 import { styles } from "./data/styles";
+import History from "./components/History";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -12,9 +14,30 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [style, setStyle] = useState(styles[0]);
 
+  const [history, setHistory] = useState(() => {
+    const savedHistory = localStorage.getItem("history");
+
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("history", JSON.stringify(history));
+  }, [history]);
+
   function finalizarCarregamento() {
     setLoading(false);
+
+    const newImage = {
+      id: Date.now(),
+      imageUrl,
+      prompt,
+      style: style.name,
+      favorite: false,
+    };
+
+    setHistory((prevHistory) => [newImage, ...prevHistory]);
   }
+
   function gerarImagem() {
     if (!prompt.trim()) return;
 
@@ -23,6 +46,39 @@ export default function App() {
     const fullprompt = `${prompt} ${style.prompt}`;
 
     setImageUrl(gerarImagemURL(fullprompt));
+  }
+
+  // 1 - Restaurar imagem do histórico
+
+  function restaurarImagem(item) {
+    setImageUrl(item.imageUrl);
+
+    setPrompt(item.prompt);
+
+    const selectedStyle = styles.find((style) => style.name === item.style);
+
+    if (selectedStyle) {
+      setStyle(selectedStyle);
+    }
+  }
+
+  // 2 - Remover imagem individual
+
+  function removerImagem(id) {
+    setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
+  }
+
+  function alternarFavorito(id) {
+    setHistory((prevHistory) =>
+      prevHistory.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              favorite: !item.favorite,
+            }
+          : item,
+      ),
+    );
   }
 
   return (
@@ -45,8 +101,16 @@ export default function App() {
           loading={loading}
           onImageLoad={finalizarCarregamento}
         />
+
         <DownloadButton imageUrl={imageUrl} />
       </main>
+
+      <History
+        history={history}
+        restaurarImagem={restaurarImagem}
+        removerImagem={removerImagem}
+        alternarFavorito={alternarFavorito}
+      />
     </div>
   );
 }
