@@ -1,6 +1,14 @@
 import { getRandomPrompt } from "../utils/randomPrompt";
+import { styles } from "../data/styles";
 
-export default function PromptBox({ prompt, setPrompt, gerarImagem, loading }) {
+export default function PromptBox({
+  prompt,
+  setPrompt,
+  gerarImagem,
+  loading,
+  style,
+  setStyle,
+}) {
   function surpreender() {
     setPrompt(getRandomPrompt());
   }
@@ -13,6 +21,26 @@ export default function PromptBox({ prompt, setPrompt, gerarImagem, loading }) {
         placeholder="Descreva a imagem..."
         className="w-full h-36 rounded-xl bg-slate-800 p-4 border border-slate-700"
       />
+
+      <div className="mt-4">
+        <label className="block mb-2 text-sm text-slate-400">
+          Estilo da imagem
+        </label>
+
+        <select
+          value={style.id}
+          onChange={(e) =>
+            setStyle(styles.find((s) => s.id === e.target.value))
+          }
+          className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
+        >
+          {styles.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="mt-4 flex gap-4">
         <button

@@ -4,11 +4,14 @@ import PromptBox from "./components/PromptBox";
 import { gerarImagemURL } from "./services/pollinations";
 import ImageViewer from "./components/ImageViewer";
 import DownloadButton from "./components/DownloadButton";
+import { styles } from "./data/styles";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [style, setStyle] = useState(styles[0]);
+
   function finalizarCarregamento() {
     setLoading(false);
   }
@@ -16,7 +19,10 @@ export default function App() {
     if (!prompt.trim()) return;
 
     setLoading(true);
-    setImageUrl(gerarImagemURL(prompt));
+
+    const fullprompt = `${prompt} ${style.prompt}`;
+
+    setImageUrl(gerarImagemURL(fullprompt));
   }
 
   return (
@@ -29,6 +35,8 @@ export default function App() {
           setPrompt={setPrompt}
           gerarImagem={gerarImagem}
           loading={loading}
+          style={style}
+          setStyle={setStyle}
         />
 
         <ImageViewer
