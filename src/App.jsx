@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import PromptBox from "./components/PromptBox";
 import { gerarImagemURL } from "./services/pollinations";
 import ImageViewer from "./components/ImageViewer";
+import DownloadButton from "./components/DownloadButton";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -36,6 +37,7 @@ export default function App() {
           loading={loading}
           onImageLoad={finalizarCarregamento}
         />
+        <DownloadButton imageUrl={imageUrl} />
       </main>
     </div>
   );
