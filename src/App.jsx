@@ -16,7 +16,6 @@ export default function App() {
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("history");
-
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
 
@@ -44,39 +43,29 @@ export default function App() {
     setLoading(true);
 
     const fullprompt = `${prompt} ${style.prompt}`;
-
     setImageUrl(gerarImagemURL(fullprompt));
   }
 
-  // 1 - Restaurar imagem do histórico
-
   function restaurarImagem(item) {
     setImageUrl(item.imageUrl);
-
     setPrompt(item.prompt);
 
-    const selectedStyle = styles.find((style) => style.name === item.style);
+    const selectedStyle = styles.find((s) => s.name === item.style);
 
     if (selectedStyle) {
       setStyle(selectedStyle);
     }
   }
 
-  // 2 - Remover imagem individual
-
   function removerImagem(id) {
     setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
   }
 
+  // ⭐ Favoritar / desfavoritar
   function alternarFavorito(id) {
     setHistory((prevHistory) =>
       prevHistory.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              favorite: !item.favorite,
-            }
-          : item,
+        item.id === id ? { ...item, favorite: !item.favorite } : item,
       ),
     );
   }

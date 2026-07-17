@@ -1,65 +1,44 @@
+import { downloadImage } from "../utils/downloadImage";
+
 export default function HistoryItem({
   item,
   restaurarImagem,
   removerImagem,
   alternarFavorito,
 }) {
-  async function baixarImagem(url) {
-    try {
-      const response = await fetch(url);
-
-      const blob = await response.blob();
-
-      const link = document.createElement("a");
-
-      link.href = URL.createObjectURL(blob);
-
-      link.download = "imagem-gerada.png";
-
-      document.body.appendChild(link);
-
-      link.click();
-
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(link.href);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   return (
-    <div className="bg-slate-900 rounded-xl overflow-hidden">
+    <div className="bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
       <img
         src={item.imageUrl}
         alt={item.prompt}
-        className="w-full aspect-square object-cover cursor-pointer"
+        className="w-full aspect-square object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
         onClick={() => restaurarImagem(item)}
       />
 
-      <div className="p-3 space-y-2">
-        <p className="text-sm line-clamp-2">{item.prompt}</p>
+      <div className="p-3 space-y-3">
+        <p className="text-sm line-clamp-2 min-h-[40px]">{item.prompt}</p>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => baixarImagem(item.imageUrl)}
-            className="bg-blue-600 px-3 py-1 rounded text-sm"
+            onClick={() => alternarFavorito(item.id)}
+            className="px-3 py-1 rounded-lg text-sm bg-yellow-500 text-black hover:bg-yellow-400 transition-colors"
+            title="Favoritar"
           >
-            Baixar
+            {item.favorite ? "★" : "☆"}
+          </button>
+
+          <button
+            onClick={() => downloadImage(item.imageUrl)}
+            className="px-3 py-1 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 transition-colors"
+          >
+            📥
           </button>
 
           <button
             onClick={() => removerImagem(item.id)}
-            className="bg-red-600 px-3 py-1 rounded text-sm"
+            className="px-3 py-1 rounded-lg text-sm bg-red-600 hover:bg-red-500 transition-colors"
           >
-            Excluir
-          </button>
-
-          <button
-            onClick={() => alternarFavorito(item.id)}
-            className="bg-yellow-500 px-3 py-1 rounded text-sm"
-          >
-            {item.favorite ? "★" : "☆"}
+            🗑️
           </button>
         </div>
       </div>
