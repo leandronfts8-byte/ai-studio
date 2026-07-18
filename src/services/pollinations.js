@@ -3,6 +3,6 @@ export function gerarImagemURL(prompt) {
     "https://image.pollinations.ai/prompt/" +
     encodeURIComponent(prompt) +
     "?width=1024&height=1024&seed=" +
-    Date.now()
+    Math.floor(Math.random() * 2147483647)
   );
 }

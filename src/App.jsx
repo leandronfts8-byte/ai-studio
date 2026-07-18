@@ -7,12 +7,15 @@ import ImageViewer from "./components/ImageViewer";
 import DownloadButton from "./components/DownloadButton";
 import { styles } from "./data/styles";
 import History from "./components/History";
+import Modal from "./components/Modal";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [style, setStyle] = useState(styles[0]);
+  const [search, setSearch] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("history");
@@ -43,7 +46,9 @@ export default function App() {
     setLoading(true);
 
     const fullprompt = `${prompt} ${style.prompt}`;
-    setImageUrl(gerarImagemURL(fullprompt));
+    const url = gerarImagemURL(fullprompt);
+    console.log(url);
+    setImageUrl(url);
   }
 
   function restaurarImagem(item) {
@@ -60,6 +65,19 @@ export default function App() {
   function removerImagem(id) {
     setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
   }
+  function abrirModal() {
+    setModalOpen(true);
+  }
+
+  function fecharModal() {
+    setModalOpen(false);
+  }
+
+  function limparHistorico() {
+    setHistory([]);
+    setImageUrl("");
+    fecharModal();
+  }
 
   // ⭐ Favoritar / desfavoritar
   function alternarFavorito(id) {
@@ -69,7 +87,6 @@ export default function App() {
       ),
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <Header />
@@ -96,9 +113,21 @@ export default function App() {
 
       <History
         history={history}
+        search={search}
+        setSearch={setSearch}
         restaurarImagem={restaurarImagem}
         removerImagem={removerImagem}
         alternarFavorito={alternarFavorito}
+        limparHistorico={limparHistorico}
+        abrirModal={abrirModal}
+      />
+
+      <Modal
+        isOpen={modalOpen}
+        title="Limpar histórico"
+        message="Deseja realmente apagar todo o histórico?"
+        onConfirm={limparHistorico}
+        onCancel={fecharModal}
       />
     </div>
   );
