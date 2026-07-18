@@ -5,6 +5,7 @@ export default function ImageViewer({
   prompt,
   loading,
   onImageLoad,
+  onImageError,
 }) {
   return (
     <div className="mt-10 bg-slate-900 rounded-2xl p-6 min-h-[500px] flex items-center justify-center">
@@ -22,6 +23,7 @@ export default function ImageViewer({
             src={imageUrl}
             alt={prompt}
             onLoad={onImageLoad}
+            onError={onImageError}
             className={`rounded-xl max-h-[500px] transition-opacity duration-300 ${
               loading ? "opacity-0" : "opacity-100"
             }`}

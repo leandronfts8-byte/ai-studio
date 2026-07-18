@@ -16,6 +16,7 @@ export default function App() {
   const [style, setStyle] = useState(styles[0]);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState("");
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("history");
@@ -40,9 +41,14 @@ export default function App() {
     setHistory((prevHistory) => [newImage, ...prevHistory]);
   }
 
+  function erroAoCarregarImagem() {
+    setLoading(false);
+    setError("Não foi possível gerar a imagem. Tente novamente.");
+  }
+
   function gerarImagem() {
     if (!prompt.trim()) return;
-
+    setError("");
     setLoading(true);
 
     const fullprompt = `${prompt} ${style.prompt}`;
@@ -106,10 +112,16 @@ export default function App() {
           prompt={prompt}
           loading={loading}
           onImageLoad={finalizarCarregamento}
+          onImageError={erroAoCarregarImagem}
         />
 
         <DownloadButton imageUrl={imageUrl} />
       </main>
+      {error && (
+        <div className="mt-4 rounded-lg bg-red-900/40 border border-red-500 text-red-200 px-4 py-3">
+          ❌ {error}
+        </div>
+      )}
 
       <History
         history={history}
