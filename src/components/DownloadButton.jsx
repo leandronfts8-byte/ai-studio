@@ -1,4 +1,4 @@
-export default function DownloadButton({ imageUrl }) {
+export default function DownloadButton({ imageUrl, mostrarToast }) {
   if (!imageUrl) return null;
 
   async function baixarImagem() {
@@ -22,6 +22,7 @@ export default function DownloadButton({ imageUrl }) {
 
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      mostrarToast("Download iniciado");
     } catch (error) {
       console.error(error);
       alert("Não foi possível baixar a imagem.");

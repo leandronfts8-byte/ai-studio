@@ -8,6 +8,7 @@ import DownloadButton from "./components/DownloadButton";
 import { styles } from "./data/styles";
 import History from "./components/History";
 import Modal from "./components/Modal";
+import Toast from "./components/Toast";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -15,8 +16,15 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [style, setStyle] = useState(styles[0]);
   const [search, setSearch] = useState("");
+  const [resolution, setResolution] = useState("1024");
+  const [model, setModel] = useState("flux");
+  const [seed, setSeed] = useState("auto");
+  const [manualSeed, setManualSeed] = useState("");
+  const [negativePrompt, setNegativePrompt] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+  const [sortBY, setSortBY] = useState("favorites");
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("history");
@@ -35,6 +43,11 @@ export default function App() {
       imageUrl,
       prompt,
       style: style.name,
+      resolution,
+      model,
+      seed,
+      manualSeed,
+      negativePrompt,
       favorite: false,
     };
 
@@ -45,6 +58,12 @@ export default function App() {
     setLoading(false);
     setError("Não foi possível gerar a imagem. Tente novamente.");
   }
+  function mostrarToast(mensagem) {
+    setToast(mensagem);
+    setTimeout(() => {
+      setToast("");
+    }, 3000);
+  }
 
   function gerarImagem() {
     if (!prompt.trim()) return;
@@ -52,7 +71,13 @@ export default function App() {
     setLoading(true);
 
     const fullprompt = `${prompt} ${style.prompt}`;
-    const url = gerarImagemURL(fullprompt);
+    const url = gerarImagemURL(
+      fullprompt,
+      resolution,
+      model,
+      seed === "manual" ? manualSeed : undefined,
+      negativePrompt,
+    );
     console.log(url);
     setImageUrl(url);
   }
@@ -62,14 +87,20 @@ export default function App() {
     setPrompt(item.prompt);
 
     const selectedStyle = styles.find((s) => s.name === item.style);
-
     if (selectedStyle) {
       setStyle(selectedStyle);
+      setResolution(item.resolution || "1024");
+      setModel(item.model || "flux");
+      setSeed(item.seed || "auto");
+      setManualSeed(item.manualSeed || "");
+      setNegativePrompt(item.negativePrompt || "");
     }
+    mostrarToast("Imagem restaurada");
   }
 
   function removerImagem(id) {
     setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
+    mostrarToast("Imagem removida");
   }
   function abrirModal() {
     setModalOpen(true);
@@ -82,17 +113,30 @@ export default function App() {
   function limparHistorico() {
     setHistory([]);
     setImageUrl("");
+    mostrarToast("Histórico limpo com sucesso!");
+    setTimeout(() => {
+      setToast("");
+    }, 3000);
     fecharModal();
   }
 
   // ⭐ Favoritar / desfavoritar
   function alternarFavorito(id) {
+    const item = history.find((item) => item.id === id);
+    if (!item) return;
+    const novoFavorito = !item.favorite;
     setHistory((prevHistory) =>
       prevHistory.map((item) =>
         item.id === id ? { ...item, favorite: !item.favorite } : item,
       ),
     );
+    mostrarToast(
+      novoFavorito
+        ? "Imagem adicionada aos favoritos!"
+        : "Imagem removida dos favoritos!",
+    );
   }
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <Header />
@@ -105,6 +149,16 @@ export default function App() {
           loading={loading}
           style={style}
           setStyle={setStyle}
+          resolution={resolution}
+          setResolution={setResolution}
+          model={model}
+          setModel={setModel}
+          seed={seed}
+          setSeed={setSeed}
+          manualSeed={manualSeed}
+          setManualSeed={setManualSeed}
+          negativePrompt={negativePrompt}
+          setNegativePrompt={setNegativePrompt}
         />
 
         <ImageViewer
@@ -115,7 +169,7 @@ export default function App() {
           onImageError={erroAoCarregarImagem}
         />
 
-        <DownloadButton imageUrl={imageUrl} />
+        <DownloadButton imageUrl={imageUrl} mostrarToast={mostrarToast} />
       </main>
       {error && (
         <div className="mt-4 rounded-lg bg-red-900/40 border border-red-500 text-red-200 px-4 py-3">
@@ -132,6 +186,9 @@ export default function App() {
         alternarFavorito={alternarFavorito}
         limparHistorico={limparHistorico}
         abrirModal={abrirModal}
+        mostrarToast={mostrarToast}
+        sortBY={sortBY}
+        setSortBY={setSortBY}
       />
 
       <Modal
@@ -141,6 +198,8 @@ export default function App() {
         onConfirm={limparHistorico}
         onCancel={fecharModal}
       />
+
+      <Toast message={toast} />
     </div>
   );
 }

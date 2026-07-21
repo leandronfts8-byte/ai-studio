@@ -5,6 +5,7 @@ export default function HistoryItem({
   restaurarImagem,
   removerImagem,
   alternarFavorito,
+  mostrarToast,
 }) {
   return (
     <div className="bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
@@ -28,7 +29,10 @@ export default function HistoryItem({
           </button>
 
           <button
-            onClick={() => downloadImage(item.imageUrl)}
+            onClick={() => {
+              downloadImage(item.imageUrl);
+              mostrarToast("Download iniciado");
+            }}
             className="px-3 py-1 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 transition-colors"
           >
             📥
