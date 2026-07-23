@@ -19,6 +19,8 @@ export default function PromptBox({
   setManualSeed,
   negativePrompt,
   setNegativePrompt,
+  aspectRatio,
+  setAspectRatio,
 }) {
   return (
     <div className="bg-slate-900 p-6 rounded-2xl">
@@ -37,6 +39,8 @@ export default function PromptBox({
         setManualSeed={setManualSeed}
         negativePrompt={negativePrompt}
         setNegativePrompt={setNegativePrompt}
+        aspectRatio={aspectRatio}
+        setAspectRatio={setAspectRatio}
       />
 
       <GenerateButton gerarImagem={gerarImagem} loading={loading} />

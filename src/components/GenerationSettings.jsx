@@ -5,6 +5,8 @@ export default function GenerationSettings({
   setStyle,
   resolution,
   setResolution,
+  aspectRatio,
+  setAspectRatio,
   model,
   setModel,
   seed,
@@ -49,6 +51,24 @@ export default function GenerationSettings({
             <option value="1536">1536 × 1536</option>
           </select>
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm text-slate-400 mb-1">
+          Aspect Ratio
+        </label>
+
+        <select
+          value={aspectRatio}
+          onChange={(e) => setAspectRatio(e.target.value)}
+          className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
+        >
+          <option value="1:1"> (Quadrado)</option>
+          <option value="16:9"> (Paisagem)</option>
+          <option value="9:16"> (Retrato)</option>
+          <option value="3:2">3:2</option>
+          <option value="2:3">2:3</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-3">

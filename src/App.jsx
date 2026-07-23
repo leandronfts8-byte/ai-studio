@@ -9,6 +9,7 @@ import { styles } from "./data/styles";
 import History from "./components/History";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
+import ImageInfo from "./components/ImageInfo";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -24,7 +25,8 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
-  const [sortBY, setSortBY] = useState("favorites");
+  const [sortBy, setSortBy] = useState("favorites");
+  const [aspectRatio, setAspectRatio] = useState("1:1");
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("history");
@@ -45,9 +47,11 @@ export default function App() {
       style: style.name,
       resolution,
       model,
+      aspectRatio,
       seed,
       manualSeed,
       negativePrompt,
+      createdAt: new Date().toLocaleString("pt-BR"),
       favorite: false,
     };
 
@@ -67,17 +71,21 @@ export default function App() {
 
   function gerarImagem() {
     if (!prompt.trim()) return;
+
     setError("");
     setLoading(true);
 
     const fullprompt = `${prompt} ${style.prompt}`;
-    const url = gerarImagemURL(
-      fullprompt,
+
+    const url = gerarImagemURL({
+      prompt: fullprompt,
       resolution,
+      aspectRatio,
       model,
-      seed === "manual" ? manualSeed : undefined,
+      seed: seed === "manual" ? manualSeed : undefined,
       negativePrompt,
-    );
+    });
+
     console.log(url);
     setImageUrl(url);
   }
@@ -137,6 +145,20 @@ export default function App() {
     );
   }
 
+  const imageSettings = {
+    prompt,
+    style,
+    model,
+    resolution,
+    aspectRatio,
+    seed: seed === "manual" ? manualSeed : "Auto",
+    negativePrompt,
+    createdAt:
+      history.length > 0
+        ? history[0].createdAt
+        : new Date().toLocaleString("pt-BR"),
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <Header />
@@ -159,6 +181,8 @@ export default function App() {
           setManualSeed={setManualSeed}
           negativePrompt={negativePrompt}
           setNegativePrompt={setNegativePrompt}
+          aspectRatio={aspectRatio}
+          setAspectRatio={setAspectRatio}
         />
 
         <ImageViewer
@@ -168,6 +192,7 @@ export default function App() {
           onImageLoad={finalizarCarregamento}
           onImageError={erroAoCarregarImagem}
         />
+        <ImageInfo settings={imageSettings} />
 
         <DownloadButton imageUrl={imageUrl} mostrarToast={mostrarToast} />
       </main>
@@ -187,8 +212,8 @@ export default function App() {
         limparHistorico={limparHistorico}
         abrirModal={abrirModal}
         mostrarToast={mostrarToast}
-        sortBY={sortBY}
-        setSortBY={setSortBY}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
       />
 
       <Modal
