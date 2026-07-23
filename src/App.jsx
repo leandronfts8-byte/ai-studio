@@ -10,6 +10,8 @@ import History from "./components/History";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
 import ImageInfo from "./components/ImageInfo";
+import ExportHistoryButton from "./components/ExportHistoryButton";
+import ImportHistoryButton from "./components/ImportHistoryButton";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -201,6 +203,15 @@ export default function App() {
           ❌ {error}
         </div>
       )}
+
+      <div className="mt-10 mb-4 flex justify-end gap-3">
+        <ExportHistoryButton history={history} mostrarToast={mostrarToast} />
+
+        <ImportHistoryButton
+          setHistory={setHistory}
+          mostrarToast={mostrarToast}
+        />
+      </div>
 
       <History
         history={history}
