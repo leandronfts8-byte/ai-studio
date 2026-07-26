@@ -6,15 +6,12 @@ export default function ImportHistoryButton({ setHistory, mostrarToast }) {
 
     try {
       const history = await importHistory(file);
-
       setHistory(history);
-
       mostrarToast("Histórico importado com sucesso!");
     } catch (error) {
       mostrarToast(error);
     }
 
-    // Permite importar novamente o mesmo arquivo
     event.target.value = "";
   }
 
@@ -30,9 +27,9 @@ export default function ImportHistoryButton({ setHistory, mostrarToast }) {
 
       <label
         htmlFor="import-history"
-        className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 hover:border-emerald-500/40 transition-all duration-200 cursor-pointer"
       >
-        ⬆ Importar Histórico
+        ⬆️ Importar
       </label>
     </>
   );

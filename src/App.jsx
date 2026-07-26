@@ -10,8 +10,6 @@ import History from "./components/History";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
 import ImageInfo from "./components/ImageInfo";
-import ExportHistoryButton from "./components/ExportHistoryButton";
-import ImportHistoryButton from "./components/ImportHistoryButton";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -64,6 +62,7 @@ export default function App() {
     setLoading(false);
     setError("Não foi possível gerar a imagem. Tente novamente.");
   }
+
   function mostrarToast(mensagem) {
     setToast(mensagem);
     setTimeout(() => {
@@ -88,7 +87,6 @@ export default function App() {
       negativePrompt,
     });
 
-    console.log(url);
     setImageUrl(url);
   }
 
@@ -112,9 +110,6 @@ export default function App() {
     setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
     mostrarToast("Imagem removida");
   }
-  function abrirModal() {
-    setModalOpen(true);
-  }
 
   function fecharModal() {
     setModalOpen(false);
@@ -124,13 +119,9 @@ export default function App() {
     setHistory([]);
     setImageUrl("");
     mostrarToast("Histórico limpo com sucesso!");
-    setTimeout(() => {
-      setToast("");
-    }, 3000);
-    fecharModal();
+    setModalOpen(false);
   }
 
-  // ⭐ Favoritar / desfavoritar
   function alternarFavorito(id) {
     const item = history.find((item) => item.id === id);
     if (!item) return;
@@ -162,10 +153,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen text-white">
       <Header />
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
         <PromptBox
           prompt={prompt}
           setPrompt={setPrompt}
@@ -194,24 +185,20 @@ export default function App() {
           onImageLoad={finalizarCarregamento}
           onImageError={erroAoCarregarImagem}
         />
+
+        {error && (
+          <div className="glass rounded-xl border border-red-500/30 bg-red-900/20 px-5 py-4 animate-slide-up">
+            <div className="flex items-center gap-2 text-red-300">
+              <span>❌</span>
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          </div>
+        )}
+
         <ImageInfo settings={imageSettings} />
 
         <DownloadButton imageUrl={imageUrl} mostrarToast={mostrarToast} />
       </main>
-      {error && (
-        <div className="mt-4 rounded-lg bg-red-900/40 border border-red-500 text-red-200 px-4 py-3">
-          ❌ {error}
-        </div>
-      )}
-
-      <div className="mt-10 mb-4 flex justify-end gap-3">
-        <ExportHistoryButton history={history} mostrarToast={mostrarToast} />
-
-        <ImportHistoryButton
-          setHistory={setHistory}
-          mostrarToast={mostrarToast}
-        />
-      </div>
 
       <History
         history={history}
@@ -221,7 +208,7 @@ export default function App() {
         removerImagem={removerImagem}
         alternarFavorito={alternarFavorito}
         limparHistorico={limparHistorico}
-        abrirModal={abrirModal}
+        abrirModal={() => setModalOpen(true)}
         mostrarToast={mostrarToast}
         sortBy={sortBy}
         setSortBy={setSortBy}

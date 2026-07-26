@@ -25,7 +25,7 @@ export default function DownloadButton({ imageUrl, mostrarToast }) {
       mostrarToast("Download iniciado");
     } catch (error) {
       console.error(error);
-      alert("Não foi possível baixar a imagem.");
+      mostrarToast("Erro ao baixar imagem");
     }
   }
 
@@ -33,9 +33,12 @@ export default function DownloadButton({ imageUrl, mostrarToast }) {
     <div className="mt-6 flex justify-center">
       <button
         onClick={baixarImagem}
-        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition"
+        className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 p-[1px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
       >
-        📥 Baixar imagem
+        <div className="relative flex items-center gap-3 rounded-xl bg-slate-900 px-8 py-3 transition-all duration-300 group-hover:bg-slate-900/80">
+          <span className="text-lg">📥</span>
+          <span className="font-semibold text-white">Baixar imagem</span>
+        </div>
       </button>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function ImageInfo({ settings }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const {
     prompt,
@@ -14,68 +14,66 @@ export default function ImageInfo({ settings }) {
     negativePrompt,
   } = settings;
 
+  const infoItems = [
+    { label: "🎨 Estilo", value: style?.name || "-" },
+    { label: "🤖 Modelo", value: model || "-" },
+    { label: "📐 Proporção", value: aspectRatio || "-" },
+    { label: "📏 Resolução", value: resolution ? `${resolution}px` : "-" },
+    { label: "🌱 Seed", value: seed || "-" },
+    { label: "📅 Gerada em", value: createdAt || "-" },
+  ];
+
   return (
-    <div className="bg-slate-900 rounded-2xl mt-6 overflow-hidden">
+    <div className="glass rounded-2xl mt-6 overflow-hidden transition-all duration-300">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800 transition-colors"
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/30 transition-colors"
       >
-        <div>
-          <h2 className="text-lg font-semibold">🖼️ Informações da imagem</h2>
-
-          <p className="text-sm text-slate-400 mt-1">
-            {model} • {aspectRatio} • {resolution}px
-          </p>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🖼️</span>
+          <span className="font-semibold">Informações da imagem</span>
         </div>
-
-        <span className="text-2xl text-slate-400">{open ? "▲" : "▼"}</span>
+        <span
+          className={`text-xs text-slate-400 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        >
+          ▼
+        </span>
       </button>
 
       {open && (
-        <div className="border-t border-slate-800 p-5">
-          <div className="space-y-4 text-sm">
-            <div>
-              <p className="text-slate-400 mb-1">📝 Prompt</p>
-              <p className="break-words">{prompt}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-slate-400 mb-1">🎨 Estilo</p>
-                <p>{style.name}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400 mb-1">🤖 Modelo</p>
-                <p>{model}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400 mb-1">📐 Aspect Ratio</p>
-                <p>{aspectRatio}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400 mb-1">📏 Resolução</p>
-                <p>{resolution}px</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-slate-400 mb-1">🌱 Seed</p>
-              <p>{seed}</p>
-            </div>
-
-            <div>
-              <p className="text-slate-400 mb-1">📅 Gerada em</p>
-              <p>{createdAt || "-"}</p>
-            </div>
-
-            <div>
-              <p className="text-slate-400 mb-1">🚫 Prompt Negativo</p>
-              <p className="break-words">{negativePrompt || "Nenhum"}</p>
-            </div>
+        <div className="border-t border-slate-700/30 p-5 animate-slide-up">
+          <div className="mb-4">
+            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1.5">
+              📝 Prompt
+            </p>
+            <p className="text-sm text-slate-300 bg-slate-800/50 rounded-lg p-3 break-words leading-relaxed">
+              {prompt || "-"}
+            </p>
           </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {infoItems.map((item) => (
+              <div key={item.label} className="bg-slate-800/30 rounded-lg p-3">
+                <p className="text-xs text-slate-500 mb-1">{item.label}</p>
+                <p className="text-sm font-medium text-slate-200">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {negativePrompt && (
+            <div className="mt-4">
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1.5">
+                🚫 Prompt Negativo
+              </p>
+              <p className="text-sm text-slate-400 bg-slate-800/50 rounded-lg p-3 break-words">
+                {negativePrompt}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
