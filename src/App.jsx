@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import Header from "./components/Header";
 import PromptBox from "./components/PromptBox";
 import { gerarImagemURL } from "./services/pollinations";
 import ImageViewer from "./components/ImageViewer";
-import DownloadButton from "./components/DownloadButton";
 import { styles } from "./data/styles";
 import History from "./components/History";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
 import ImageInfo from "./components/ImageInfo";
+import PromptLibraryModal from "./components/PromptLibraryModal";
+import { addPrompt } from "./utils/promptLibrary";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -27,6 +28,10 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [sortBy, setSortBy] = useState("favorites");
   const [aspectRatio, setAspectRatio] = useState("1:1");
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryKey, setLibraryKey] = useState(0);
+
+  const isRestoring = useRef(false);
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("history");
@@ -39,6 +44,11 @@ export default function App() {
 
   function finalizarCarregamento() {
     setLoading(false);
+
+    if (isRestoring.current) {
+      isRestoring.current = false;
+      return;
+    }
 
     const newImage = {
       id: Date.now(),
@@ -56,6 +66,14 @@ export default function App() {
     };
 
     setHistory((prevHistory) => [newImage, ...prevHistory]);
+
+    // Salva automaticamente na biblioteca
+    addPrompt({
+      title: prompt.length > 30 ? prompt.substring(0, 30) + "..." : prompt,
+      category: "Geral",
+      prompt,
+      style: style.id,
+    });
   }
 
   function erroAoCarregarImagem() {
@@ -90,7 +108,26 @@ export default function App() {
     setImageUrl(url);
   }
 
+  // ← DEPOIS da função, coloque o ref e o useEffect:
+  const gerarImagemRef = useRef(gerarImagem);
+
+  useEffect(() => {
+    gerarImagemRef.current = gerarImagem;
+  });
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        gerarImagemRef.current();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   function restaurarImagem(item) {
+    isRestoring.current = true;
     setImageUrl(item.imageUrl);
     setPrompt(item.prompt);
 
@@ -104,6 +141,7 @@ export default function App() {
       setNegativePrompt(item.negativePrompt || "");
     }
     mostrarToast("Imagem restaurada");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function removerImagem(id) {
@@ -120,6 +158,22 @@ export default function App() {
     setImageUrl("");
     mostrarToast("Histórico limpo com sucesso!");
     setModalOpen(false);
+  }
+
+  function openLibrary() {
+    setLibraryKey((prev) => prev + 1);
+    setLibraryOpen(true);
+  }
+
+  function aplicarPrompt(promptSelecionado) {
+    if (!promptSelecionado) return;
+    setPrompt(promptSelecionado.prompt);
+    const selectedStyle = styles.find(
+      (item) => item.id === promptSelecionado.style,
+    );
+    if (selectedStyle) {
+      setStyle(selectedStyle);
+    }
   }
 
   function alternarFavorito(id) {
@@ -157,6 +211,15 @@ export default function App() {
       <Header />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+        <ImageViewer
+          imageUrl={imageUrl}
+          prompt={prompt}
+          loading={loading}
+          onImageLoad={finalizarCarregamento}
+          onImageError={erroAoCarregarImagem}
+          mostrarToast={mostrarToast}
+        />
+
         <PromptBox
           prompt={prompt}
           setPrompt={setPrompt}
@@ -178,14 +241,6 @@ export default function App() {
           setAspectRatio={setAspectRatio}
         />
 
-        <ImageViewer
-          imageUrl={imageUrl}
-          prompt={prompt}
-          loading={loading}
-          onImageLoad={finalizarCarregamento}
-          onImageError={erroAoCarregarImagem}
-        />
-
         {error && (
           <div className="glass rounded-xl border border-red-500/30 bg-red-900/20 px-5 py-4 animate-slide-up">
             <div className="flex items-center gap-2 text-red-300">
@@ -196,8 +251,6 @@ export default function App() {
         )}
 
         <ImageInfo settings={imageSettings} />
-
-        <DownloadButton imageUrl={imageUrl} mostrarToast={mostrarToast} />
       </main>
 
       <History
@@ -207,11 +260,19 @@ export default function App() {
         restaurarImagem={restaurarImagem}
         removerImagem={removerImagem}
         alternarFavorito={alternarFavorito}
-        limparHistorico={limparHistorico}
         abrirModal={() => setModalOpen(true)}
         mostrarToast={mostrarToast}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        setHistory={setHistory}
+        openLibrary={openLibrary}
+      />
+
+      <PromptLibraryModal
+        key={libraryKey}
+        isOpen={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        onSelect={aplicarPrompt}
       />
 
       <Modal

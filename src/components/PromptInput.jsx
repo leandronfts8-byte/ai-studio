@@ -1,4 +1,9 @@
-export default function PromptInput({ prompt, setPrompt, surpreender }) {
+export default function PromptInput({
+  prompt,
+  setPrompt,
+  surpreender,
+  onSavePrompt,
+}) {
   return (
     <div className="space-y-3">
       <div className="relative">
@@ -13,15 +18,24 @@ export default function PromptInput({ prompt, setPrompt, surpreender }) {
         </div>
       </div>
 
-      <button
-        onClick={surpreender}
-        className="group flex items-center gap-2 text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200"
-      >
-        <span className="inline-block transition-transform duration-200 group-hover:rotate-180">
-          🎲
-        </span>
-        Surpreenda-me com um prompt aleatório
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={surpreender}
+          className="group flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg text-purple-400 bg-purple-600/10 border border-purple-500/20 hover:bg-purple-600/20 hover:border-purple-500/40 hover:text-purple-300 transition-all duration-200"
+        >
+          <span className="inline-block transition-transform duration-200 group-hover:rotate-180">
+            🎲
+          </span>
+          Surpreenda-me com um prompt aleatório
+        </button>
+
+        <button
+          onClick={onSavePrompt}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 hover:border-cyan-500/40 transition-all duration-200"
+        >
+          💾 Salvar Prompt
+        </button>
+      </div>
     </div>
   );
 }

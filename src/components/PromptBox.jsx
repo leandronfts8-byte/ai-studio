@@ -4,13 +4,9 @@ import PromptInput from "./PromptInput";
 import GenerationSettings from "./GenerationSettings";
 import GenerateButton from "./GenerateButton";
 
-import PromptLibraryButton from "./PromptLibraryButton";
-import PromptLibraryModal from "./PromptLibraryModal";
-
 import { getRandomPrompt } from "../utils/randomPrompt";
 import { styles } from "../data/styles";
 
-import SavePromptButton from "./SavePromptButton";
 import SavePromptModal from "./SavePromptModal";
 
 import { addPrompt } from "../utils/promptLibrary";
@@ -35,7 +31,6 @@ export default function PromptBox({
   aspectRatio,
   setAspectRatio,
 }) {
-  const [libraryOpen, setLibraryOpen] = useState(false);
   const [savePromptOpen, setSavePromptOpen] = useState(false);
 
   function salvarPrompt(promptData) {
@@ -43,22 +38,17 @@ export default function PromptBox({
     setSavePromptOpen(false);
   }
 
-  function aplicarPrompt(promptSelecionado) {
-    if (!promptSelecionado) return;
-
-    setPrompt(promptSelecionado.prompt);
+  function surpreender() {
+    const randomPromptItem = getRandomPrompt();
+    setPrompt(randomPromptItem.prompt);
 
     const selectedStyle = styles.find(
-      (item) => item.id === promptSelecionado.style,
+      (item) => item.id === randomPromptItem.style,
     );
 
     if (selectedStyle) {
       setStyle(selectedStyle);
     }
-  }
-
-  function surpreender() {
-    aplicarPrompt(getRandomPrompt());
   }
 
   return (
@@ -68,12 +58,8 @@ export default function PromptBox({
           prompt={prompt}
           setPrompt={setPrompt}
           surpreender={surpreender}
+          onSavePrompt={() => setSavePromptOpen(true)}
         />
-
-        <div className="mt-4 flex gap-2">
-          <PromptLibraryButton onClick={() => setLibraryOpen(true)} />
-          <SavePromptButton onClick={() => setSavePromptOpen(true)} />
-        </div>
 
         <GenerationSettings
           style={style}
@@ -95,11 +81,6 @@ export default function PromptBox({
         <GenerateButton gerarImagem={gerarImagem} loading={loading} />
       </div>
 
-      <PromptLibraryModal
-        isOpen={libraryOpen}
-        onClose={() => setLibraryOpen(false)}
-        onSelect={aplicarPrompt}
-      />
       <SavePromptModal
         isOpen={savePromptOpen}
         onClose={() => setSavePromptOpen(false)}

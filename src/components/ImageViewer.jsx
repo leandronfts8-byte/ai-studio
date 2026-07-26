@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Loading from "./Loading";
 
 export default function ImageViewer({
@@ -6,7 +7,29 @@ export default function ImageViewer({
   loading,
   onImageLoad,
   onImageError,
+  mostrarToast,
 }) {
+  const [hovered, setHovered] = useState(false);
+
+  async function baixarImagem() {
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `imagem-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      mostrarToast("Download iniciado");
+    } catch {
+      mostrarToast("Erro ao baixar imagem");
+    }
+  }
+
   return (
     <div className="glass rounded-2xl p-6 min-h-[400px] flex items-center justify-center transition-all duration-300">
       {!imageUrl && !loading && (
@@ -19,10 +42,12 @@ export default function ImageViewer({
         </div>
       )}
 
-      {/* Sempre monta a tag <img> quando houver imageUrl para que onLoad/onError sejam chamados.
-          Mostra o Loading como overlay enquanto loading for true. */}
       {imageUrl && (
-        <div className="relative w-full flex items-center justify-center animate-fade-in">
+        <div
+          className="relative w-full flex items-center justify-center animate-fade-in"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <Loading />
@@ -36,6 +61,19 @@ export default function ImageViewer({
             onError={onImageError}
             className={`rounded-xl max-h-[500px] w-full object-contain shadow-2xl transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
           />
+
+          {!loading && (
+            <button
+              onClick={baixarImagem}
+              className={`absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-black/60 text-white backdrop-blur-sm border border-white/10 hover:bg-black/80 hover:border-white/20 transition-all duration-200 ${
+                hovered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
+              }`}
+            >
+              📥 Baixar
+            </button>
+          )}
         </div>
       )}
     </div>

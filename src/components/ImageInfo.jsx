@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function ImageInfo({ settings }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const {
     prompt,
@@ -13,6 +13,10 @@ export default function ImageInfo({ settings }) {
     createdAt,
     negativePrompt,
   } = settings;
+
+  const summary = prompt
+    ? `${style?.name || "-"} · ${model} · ${resolution}px · ${aspectRatio} · ${seed}`
+    : "Nenhuma imagem gerada";
 
   const infoItems = [
     { label: "🎨 Estilo", value: style?.name || "-" },
@@ -27,19 +31,25 @@ export default function ImageInfo({ settings }) {
     <div className="glass rounded-2xl mt-6 overflow-hidden transition-all duration-300">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/30 transition-colors"
+        className="flex items-center justify-between w-full p-5 text-left hover:bg-slate-800/30 transition-colors group"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">🖼️</span>
           <span className="font-semibold">Informações da imagem</span>
         </div>
-        <span
-          className={`text-xs text-slate-400 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-        >
-          ▼
-        </span>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 max-w-[300px] truncate">
+            {summary}
+          </span>
+          <span
+            className={`text-xs text-slate-400 transition-transform duration-200 ${
+              open ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </div>
       </button>
 
       {open && (
