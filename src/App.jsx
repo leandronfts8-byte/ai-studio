@@ -11,26 +11,40 @@ import Toast from "./components/Toast";
 import ImageInfo from "./components/ImageInfo";
 import PromptLibraryModal from "./components/PromptLibraryModal";
 import { addPrompt } from "./utils/promptLibrary";
+import Footer from "./components/Footer";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [style, setStyle] = useState(styles[0]);
-  const [search, setSearch] = useState("");
-  const [resolution, setResolution] = useState("1024");
-  const [model, setModel] = useState("flux");
-  const [seed, setSeed] = useState("auto");
+  const actualSeedRef = useRef(null);
+  const [style, setStyle] = useState(() => {
+    const saved = localStorage.getItem("aiStudio_style");
+    if (saved) {
+      const found = styles.find((s) => s.id === saved);
+      if (found) return found;
+    }
+    return styles[0];
+  });
+  const [resolution, setResolution] = useState(() => {
+    return localStorage.getItem("aiStudio_resolution") || "1024";
+  });
+  const [model, setModel] = useState(() => {
+    return localStorage.getItem("aiStudio_model") || "flux";
+  });
+  const [seed, setSeed] = useState(() => {
+    return localStorage.getItem("aiStudio_seed") || "auto";
+  });
   const [manualSeed, setManualSeed] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
-  const [sortBy, setSortBy] = useState("favorites");
-  const [aspectRatio, setAspectRatio] = useState("1:1");
+  const [aspectRatio, setAspectRatio] = useState(() => {
+    return localStorage.getItem("aiStudio_aspectRatio") || "1:1";
+  });
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryKey, setLibraryKey] = useState(0);
-
   const isRestoring = useRef(false);
 
   const [history, setHistory] = useState(() => {
@@ -42,13 +56,16 @@ export default function App() {
     localStorage.setItem("history", JSON.stringify(history));
   }, [history]);
 
+  useEffect(() => {
+    localStorage.setItem("aiStudio_style", style.id);
+    localStorage.setItem("aiStudio_resolution", resolution);
+    localStorage.setItem("aiStudio_model", model);
+    localStorage.setItem("aiStudio_seed", seed);
+    localStorage.setItem("aiStudio_aspectRatio", aspectRatio);
+  }, [style, resolution, model, seed, aspectRatio]);
+
   function finalizarCarregamento() {
     setLoading(false);
-
-    if (isRestoring.current) {
-      isRestoring.current = false;
-      return;
-    }
 
     const newImage = {
       id: Date.now(),
@@ -58,7 +75,7 @@ export default function App() {
       resolution,
       model,
       aspectRatio,
-      seed,
+      seed: actualSeedRef.current,
       manualSeed,
       negativePrompt,
       createdAt: new Date().toLocaleString("pt-BR"),
@@ -67,7 +84,6 @@ export default function App() {
 
     setHistory((prevHistory) => [newImage, ...prevHistory]);
 
-    // Salva automaticamente na biblioteca
     addPrompt({
       title: prompt.length > 30 ? prompt.substring(0, 30) + "..." : prompt,
       category: "Geral",
@@ -83,32 +99,32 @@ export default function App() {
 
   function mostrarToast(mensagem) {
     setToast(mensagem);
-    setTimeout(() => {
-      setToast("");
-    }, 3000);
+    setTimeout(() => setToast(""), 3000);
   }
 
   function gerarImagem() {
     if (!prompt.trim()) return;
-
     setError("");
     setLoading(true);
-
     const fullprompt = `${prompt} ${style.prompt}`;
+
+    const isManual = seed === "manual";
+    const numericSeed = isManual
+      ? manualSeed || Math.floor(Math.random() * 999999999)
+      : Math.floor(Math.random() * 999999999);
+    actualSeedRef.current = numericSeed;
 
     const url = gerarImagemURL({
       prompt: fullprompt,
       resolution,
       aspectRatio,
       model,
-      seed: seed === "manual" ? manualSeed : undefined,
+      seed: numericSeed,
       negativePrompt,
     });
-
     setImageUrl(url);
   }
 
-  // ← DEPOIS da função, coloque o ref e o useEffect:
   const gerarImagemRef = useRef(gerarImagem);
 
   useEffect(() => {
@@ -120,33 +136,49 @@ export default function App() {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         gerarImagemRef.current();
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (libraryOpen) {
+          setLibraryOpen(false);
+          return;
+        }
+        if (modalOpen) {
+          setModalOpen(false);
+          return;
+        }
       }
     }
+
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [libraryOpen, modalOpen]);
 
   function restaurarImagem(item) {
     isRestoring.current = true;
     setImageUrl(item.imageUrl);
     setPrompt(item.prompt);
-
     const selectedStyle = styles.find((s) => s.name === item.style);
     if (selectedStyle) {
       setStyle(selectedStyle);
       setResolution(item.resolution || "1024");
       setModel(item.model || "flux");
-      setSeed(item.seed || "auto");
-      setManualSeed(item.manualSeed || "");
+      setSeed("manual");
+      setManualSeed(String(item.seed || ""));
       setNegativePrompt(item.negativePrompt || "");
+      setAspectRatio(item.aspectRatio || "1:1");
     }
-    mostrarToast("Imagem restaurada");
+    mostrarToast("Imagem restaurada com todas as configurações");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function removerImagem(id) {
-    setHistory((prevHistory) => prevHistory.filter((item) => item.id !== id));
-    mostrarToast("Imagem removida");
+  function carregarPrompt(item) {
+    setPrompt(item.prompt);
+    const selectedStyle = styles.find((s) => s.name === item.style);
+    if (selectedStyle) setStyle(selectedStyle);
+    mostrarToast("Prompt carregado!");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function fecharModal() {
@@ -171,25 +203,7 @@ export default function App() {
     const selectedStyle = styles.find(
       (item) => item.id === promptSelecionado.style,
     );
-    if (selectedStyle) {
-      setStyle(selectedStyle);
-    }
-  }
-
-  function alternarFavorito(id) {
-    const item = history.find((item) => item.id === id);
-    if (!item) return;
-    const novoFavorito = !item.favorite;
-    setHistory((prevHistory) =>
-      prevHistory.map((item) =>
-        item.id === id ? { ...item, favorite: !item.favorite } : item,
-      ),
-    );
-    mostrarToast(
-      novoFavorito
-        ? "Imagem adicionada aos favoritos!"
-        : "Imagem removida dos favoritos!",
-    );
+    if (selectedStyle) setStyle(selectedStyle);
   }
 
   const imageSettings = {
@@ -207,10 +221,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen text-white">
-      <Header />
+    <div className="min-h-screen text-white flex flex-col">
+      <Header totalGenerated={history.length} />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 flex-1 w-full">
         <ImageViewer
           imageUrl={imageUrl}
           prompt={prompt}
@@ -251,22 +265,15 @@ export default function App() {
         )}
 
         <ImageInfo settings={imageSettings} />
-      </main>
 
-      <History
-        history={history}
-        search={search}
-        setSearch={setSearch}
-        restaurarImagem={restaurarImagem}
-        removerImagem={removerImagem}
-        alternarFavorito={alternarFavorito}
-        abrirModal={() => setModalOpen(true)}
-        mostrarToast={mostrarToast}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        setHistory={setHistory}
-        openLibrary={openLibrary}
-      />
+        <History
+          history={history}
+          setHistory={setHistory}
+          onRestoreImage={restaurarImagem}
+          onLoadPrompt={carregarPrompt}
+          onOpenLibrary={openLibrary}
+        />
+      </main>
 
       <PromptLibraryModal
         key={libraryKey}
@@ -284,6 +291,8 @@ export default function App() {
       />
 
       <Toast message={toast} />
+
+      <Footer />
     </div>
   );
 }

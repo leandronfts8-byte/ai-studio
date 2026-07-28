@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HistoryItem from "./HistoryItem";
 import ExportHistoryButton from "./ExportHistoryButton";
 import ImportHistoryButton from "./ImportHistoryButton";
+import Modal from "./Modal";
 
 export default function History({
   history = [],
@@ -15,24 +16,69 @@ export default function History({
   const [compareIds, setCompareIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [prevLength, setPrevLength] = useState(history.length);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [clearModalOpen, setClearModalOpen] = useState(false);
+
+  // ── Filtros ──
+  const filteredHistory = history.filter((item) => {
+    const matchSearch =
+      searchTerm === "" ||
+      item.prompt.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchFavorite = !showFavorites || item.favorite;
+    return matchSearch && matchFavorite;
+  });
+
+  const favoriteCount = history.filter((h) => h.favorite).length;
 
   // ── Paginação ──
   const ITEMS_PER_PAGE = 8;
-  const totalPages = Math.ceil(history.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredHistory.length / ITEMS_PER_PAGE);
 
-  // React 19: ajustar estado durante o render (sem useEffect)
+  // React 19: ajustar estado durante o render
   if (prevLength !== history.length) {
     setPrevLength(history.length);
     setCurrentPage(1);
   }
 
-  // Garantir que a página está dentro do range válido
   const page = totalPages > 0 ? Math.min(currentPage, totalPages) : 1;
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const paginatedHistory = history.slice(
+  const paginatedHistory = filteredHistory.slice(
     startIndex,
     startIndex + ITEMS_PER_PAGE,
   );
+
+  // ── Atalhos de teclado ──
+  useEffect(() => {
+    function handleKeyDown(e) {
+      const tag = e.target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      if (e.key === "Escape") {
+        if (fullscreenImage) {
+          setFullscreenImage(null);
+          return;
+        }
+        if (clearModalOpen) {
+          setClearModalOpen(false);
+          return;
+        }
+      }
+
+      if (e.key === "ArrowLeft" && page > 1) {
+        setCurrentPage((p) => p - 1);
+        return;
+      }
+
+      if (e.key === "ArrowRight" && page < totalPages) {
+        setCurrentPage((p) => p + 1);
+        return;
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [fullscreenImage, clearModalOpen, page, totalPages]);
 
   // ── Funções ──
   function handleImageClick(item) {
@@ -53,14 +99,19 @@ export default function History({
       .filter(Boolean);
   }
 
-  function clearHistory() {
-    if (history.length === 0) return;
-    if (window.confirm("Tem certeza que deseja limpar todo o histórico?")) {
-      setHistory([]);
-      setCompareIds([]);
-      setCompareMode(false);
-      setCurrentPage(1);
-    }
+  function toggleFavorite(id) {
+    setHistory((prev) =>
+      prev.map((h) => (h.id === id ? { ...h, favorite: !h.favorite } : h)),
+    );
+  }
+
+  function confirmClearHistory() {
+    setHistory([]);
+    setCompareIds([]);
+    setCompareMode(false);
+    setCurrentPage(1);
+    setSearchTerm("");
+    setClearModalOpen(false);
   }
 
   function deleteItem(id) {
@@ -77,21 +128,14 @@ export default function History({
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       pages.push(1);
+      let start = Math.max(2, page - 1);
+      let end = Math.min(totalPages - 1, page + 1);
 
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(totalPages - 1, currentPage + 1);
-
-      if (currentPage <= 3) {
-        end = Math.min(4, totalPages - 1);
-      }
-      if (currentPage >= totalPages - 2) {
-        start = Math.max(totalPages - 3, 2);
-      }
+      if (page <= 3) end = Math.min(4, totalPages - 1);
+      if (page >= totalPages - 2) start = Math.max(totalPages - 3, 2);
 
       if (start > 2) pages.push("...");
-
       for (let i = start; i <= end; i++) pages.push(i);
-
       if (end < totalPages - 1) pages.push("...");
 
       pages.push(totalPages);
@@ -100,7 +144,7 @@ export default function History({
     return pages;
   }
 
-  // ── Render ──
+  // ── Render: histórico vazio ──
   if (history.length === 0) {
     return (
       <section className="glass rounded-2xl p-6 mt-6">
@@ -114,6 +158,57 @@ export default function History({
     );
   }
 
+  // ── Render: sem resultados no filtro ──
+  if (filteredHistory.length === 0) {
+    return (
+      <section className="glass rounded-2xl p-6 mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-xl font-semibold text-slate-200">
+              📜 Histórico
+              <span className="text-sm font-normal text-slate-400 ml-2">
+                ({history.length} {history.length === 1 ? "item" : "itens"})
+              </span>
+            </h2>
+            <button
+              onClick={() => {
+                setShowFavorites(false);
+                setSearchTerm("");
+              }}
+              className="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800/60 text-slate-400 border border-slate-700/30 hover:bg-slate-700/60 transition-all duration-200"
+            >
+              ← Voltar
+            </button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <ExportHistoryButton history={history} />
+            <ImportHistoryButton setHistory={setHistory} />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="🔍 Pesquisar no histórico..."
+            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 text-slate-200 text-sm border border-slate-700/40 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          />
+        </div>
+
+        <p className="text-slate-400 text-sm text-center py-8">
+          {showFavorites
+            ? "Nenhuma imagem favoritada. Clique em ☆ para favoritar!"
+            : "Nenhum resultado encontrado para esta busca."}
+        </p>
+      </section>
+    );
+  }
+
+  // ── Render principal ──
   return (
     <section className="glass rounded-2xl p-6 mt-6">
       {/* ── Header ── */}
@@ -122,7 +217,9 @@ export default function History({
           <h2 className="text-xl font-semibold text-slate-200">
             📜 Histórico
             <span className="text-sm font-normal text-slate-400 ml-2">
-              ({history.length} {history.length === 1 ? "item" : "itens"})
+              {filteredHistory.length === history.length
+                ? `${history.length} ${history.length === 1 ? "item" : "itens"}`
+                : `${filteredHistory.length} de ${history.length}`}
             </span>
           </h2>
 
@@ -134,7 +231,24 @@ export default function History({
                 : "bg-slate-800/60 text-slate-400 border-slate-700/30 hover:bg-slate-700/60"
             }`}
           >
-            {compareMode ? "✖ Sair comparação" : "⚖️ Comparar"}
+            {compareMode ? "✖ Sair" : "⚖️ Comparar"}
+          </button>
+
+          <button
+            onClick={() => {
+              setShowFavorites(!showFavorites);
+              setCurrentPage(1);
+            }}
+            className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all duration-200 ${
+              showFavorites
+                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                : "bg-slate-800/60 text-slate-400 border-slate-700/30 hover:bg-slate-700/60"
+            }`}
+          >
+            {showFavorites ? "★ Todos" : "☆ Favoritos"}
+            {favoriteCount > 0 && (
+              <span className="ml-1 opacity-70">({favoriteCount})</span>
+            )}
           </button>
 
           <button
@@ -149,11 +263,38 @@ export default function History({
           <ExportHistoryButton history={history} />
           <ImportHistoryButton setHistory={setHistory} />
           <button
-            onClick={clearHistory}
+            onClick={() => setClearModalOpen(true)}
             className="px-3 py-1 rounded-lg text-xs font-medium bg-red-600/10 text-red-400 border border-red-500/20 hover:bg-red-600/20 transition-all duration-200"
           >
             🗑️ Limpar
           </button>
+        </div>
+      </div>
+
+      {/* ── Barra de pesquisa ── */}
+      <div className="mb-4">
+        <div className="relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="🔍 Pesquisar no histórico..."
+            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 text-slate-200 text-sm border border-slate-700/40 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setCurrentPage(1);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
@@ -168,7 +309,7 @@ export default function History({
         </div>
       )}
 
-      {/* ── Compare view (lado a lado) ── */}
+      {/* ── Compare view ── */}
       {compareMode && compareIds.length === 2 && (
         <div className="grid grid-cols-2 gap-4 mb-6 animate-fade-in">
           {compareItems().map((item) => (
@@ -186,7 +327,7 @@ export default function History({
         </div>
       )}
 
-      {/* ── Grid de imagens (paginado) ── */}
+      {/* ── Grid ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {paginatedHistory.map((item) => (
           <HistoryItem
@@ -196,6 +337,7 @@ export default function History({
             onLoadPrompt={onLoadPrompt}
             onImageClick={handleImageClick}
             onDelete={deleteItem}
+            onToggleFavorite={toggleFavorite}
             compareMode={compareMode}
             compareIds={compareIds}
             onToggleCompare={toggleCompare}
@@ -206,7 +348,6 @@ export default function History({
       {/* ── Paginação ── */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-slate-700/30">
-          {/* Botão anterior */}
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
@@ -219,7 +360,6 @@ export default function History({
             ◀
           </button>
 
-          {/* Números das páginas */}
           {getPageNumbers().map((num, i) =>
             num === "..." ? (
               <span
@@ -243,7 +383,6 @@ export default function History({
             ),
           )}
 
-          {/* Botão próximo */}
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
@@ -258,12 +397,11 @@ export default function History({
         </div>
       )}
 
-      {/* ── Indicador de posição ── */}
       {totalPages > 1 && (
         <p className="text-center text-xs text-slate-500 mt-2">
           Página {page} de {totalPages} — Mostrando {startIndex + 1}-
-          {Math.min(startIndex + ITEMS_PER_PAGE, history.length)} de{" "}
-          {history.length}
+          {Math.min(startIndex + ITEMS_PER_PAGE, filteredHistory.length)} de{" "}
+          {filteredHistory.length}
         </p>
       )}
 
@@ -295,21 +433,41 @@ export default function History({
               <p className="text-white text-sm line-clamp-2 mb-2">
                 {fullscreenImage.prompt}
               </p>
-              <div className="flex items-center gap-3 text-xs text-slate-400">
-                {fullscreenImage.model && (
-                  <span>Modelo: {fullscreenImage.model}</span>
-                )}
-                {fullscreenImage.seed != null && (
-                  <span>Seed: {fullscreenImage.seed}</span>
-                )}
-                {fullscreenImage.aspectRatio && (
-                  <span>Tamanho: {fullscreenImage.aspectRatio}</span>
-                )}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 text-xs text-slate-400">
+                  {fullscreenImage.model && (
+                    <span>Modelo: {fullscreenImage.model}</span>
+                  )}
+                  {fullscreenImage.seed != null && (
+                    <span>Seed: {fullscreenImage.seed}</span>
+                  )}
+                  {fullscreenImage.aspectRatio && (
+                    <span>Tamanho: {fullscreenImage.aspectRatio}</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    onLoadPrompt && onLoadPrompt(fullscreenImage);
+                    setFullscreenImage(null);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition-all duration-200 shrink-0"
+                >
+                  📝 Usar prompt
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ── Modal de confirmação ── */}
+      <Modal
+        isOpen={clearModalOpen}
+        title="Limpar histórico"
+        message="Tem certeza que deseja limpar todo o histórico?"
+        onConfirm={confirmClearHistory}
+        onCancel={() => setClearModalOpen(false)}
+      />
     </section>
   );
 }

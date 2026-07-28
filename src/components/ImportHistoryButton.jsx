@@ -27,7 +27,7 @@ export default function ImportHistoryButton({ setHistory, mostrarToast }) {
 
       <label
         htmlFor="import-history"
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 hover:border-emerald-500/40 transition-all duration-200 cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 hover:border-emerald-500/40 transition-all duration-200 cursor-pointer"
       >
         ⬆️ Importar
       </label>

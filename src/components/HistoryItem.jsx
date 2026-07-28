@@ -3,13 +3,17 @@ import { downloadImage } from "../utils/downloadImage";
 export default function HistoryItem({
   item,
   onRestore,
-  onLoadPrompt,
   onImageClick,
   onDelete,
+  onToggleFavorite,
   compareMode,
   compareIds,
   onToggleCompare,
 }) {
+  function handleClick() {
+    if (onImageClick) onImageClick(item);
+  }
+
   return (
     <div className="group bg-slate-900/60 rounded-xl overflow-hidden border border-slate-800/50 hover:border-slate-700/80 transition-all duration-300 card-shine">
       <div className="relative overflow-hidden">
@@ -17,15 +21,15 @@ export default function HistoryItem({
           src={item.imageUrl}
           alt={item.prompt}
           className="w-full aspect-square object-cover cursor-pointer transition-all duration-500 group-hover:scale-110"
-          onClick={onImageClick}
+          onClick={handleClick}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-2 left-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onImageClick();
+              handleClick();
             }}
             className="px-2 py-1 rounded-md text-xs bg-black/60 text-white backdrop-blur-sm border border-white/10"
           >
@@ -34,7 +38,7 @@ export default function HistoryItem({
         </div>
 
         {item.favorite && (
-          <div className="absolute top-2 right-2 text-yellow-400 text-lg drop-shadow-lg">
+          <div className="absolute top-2 right-2 text-yellow-400 text-lg drop-shadow-lg pointer-events-none">
             ★
           </div>
         )}
@@ -65,17 +69,23 @@ export default function HistoryItem({
           )}
 
           <button
-            onClick={() => onLoadPrompt && onLoadPrompt(item)}
-            className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/50 hover:bg-blue-600/20 hover:text-blue-400 hover:border-blue-500/30 transition-all duration-200"
-            title="Usar prompt"
+            onClick={() => onToggleFavorite && onToggleFavorite(item.id)}
+            className={`px-2.5 py-1.5 rounded-lg text-xs border transition-all duration-200 ${
+              item.favorite
+                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30"
+                : "bg-slate-800/80 text-slate-400 border border-slate-700/50 hover:bg-yellow-500/20 hover:text-yellow-400 hover:border-yellow-500/30"
+            }`}
+            title={
+              item.favorite
+                ? "Remover dos favoritos"
+                : "Adicionar aos favoritos"
+            }
           >
-            📝 Usar prompt
+            {item.favorite ? "★" : "☆"}
           </button>
 
           <button
-            onClick={() => {
-              downloadImage(item.imageUrl);
-            }}
+            onClick={() => downloadImage(item.imageUrl)}
             className="px-2.5 py-1.5 rounded-lg text-xs bg-slate-800/80 text-slate-400 border border-slate-700/50 hover:bg-blue-600/20 hover:text-blue-400 hover:border-blue-500/30 transition-all duration-200"
             title="Download"
           >

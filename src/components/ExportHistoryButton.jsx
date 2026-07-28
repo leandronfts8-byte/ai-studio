@@ -23,7 +23,7 @@ export default function ExportHistoryButton({ history, mostrarToast }) {
   return (
     <button
       onClick={exportarHistorico}
-      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 hover:border-blue-500/40 transition-all duration-200"
+      className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 hover:border-blue-500/40 transition-all duration-200"
     >
       ⬇️ Exportar
     </button>
