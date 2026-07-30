@@ -61,6 +61,8 @@ export default function PromptBox({
           onSavePrompt={() => setSavePromptOpen(true)}
         />
 
+        <GenerateButton gerarImagem={gerarImagem} loading={loading} />
+
         <GenerationSettings
           style={style}
           setStyle={setStyle}
@@ -77,8 +79,6 @@ export default function PromptBox({
           aspectRatio={aspectRatio}
           setAspectRatio={setAspectRatio}
         />
-
-        <GenerateButton gerarImagem={gerarImagem} loading={loading} />
       </div>
 
       <SavePromptModal
