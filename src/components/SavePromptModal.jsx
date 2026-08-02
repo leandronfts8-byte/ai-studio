@@ -9,17 +9,6 @@ export default function SavePromptModal({
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Geral");
-  const [prevIsOpen, setPrevIsOpen] = useState(false);
-
-  // Ajusta o estado durante a renderização (padrão oficial do React 19)
-  // em vez de usar useEffect para resetar quando isOpen muda
-  if (isOpen && !prevIsOpen) {
-    setTitle("");
-    setCategory("Geral");
-    setPrevIsOpen(true);
-  } else if (!isOpen && prevIsOpen) {
-    setPrevIsOpen(false);
-  }
 
   if (!isOpen) return null;
 
@@ -27,8 +16,8 @@ export default function SavePromptModal({
     if (!title.trim()) return;
 
     onSave({
-      title,
-      category,
+      title: title.trim(),
+      category: category.trim() || "Geral",
       prompt,
       style: style.id,
     });
@@ -37,39 +26,42 @@ export default function SavePromptModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="w-full max-w-md rounded-2xl bg-slate-900 p-6">
-        <h2 className="mb-6 text-xl font-bold">💾 Salvar Prompt</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="w-full max-w-md rounded-2xl bg-slate-900 p-6 shadow-2xl">
+        <h2 className="mb-6 text-xl font-bold text-white">💾 Salvar Prompt</h2>
 
-        <label className="mb-2 block text-sm">Título</label>
+        <label className="mb-2 block text-sm text-slate-300">Título</label>
 
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="mb-5 w-full rounded-xl bg-slate-800 p-3"
+          className="mb-5 w-full rounded-xl border border-slate-700 bg-slate-800 p-3 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
           placeholder="Ex.: Samurai Cyberpunk"
         />
 
-        <label className="mb-2 block text-sm">Categoria</label>
+        <label className="mb-2 block text-sm text-slate-300">Categoria</label>
 
         <input
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full rounded-xl bg-slate-800 p-3"
+          className="w-full rounded-xl border border-slate-700 bg-slate-800 p-3 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
           placeholder="Ex.: Personagens"
         />
 
         <div className="mt-6 flex justify-end gap-3">
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-xl bg-slate-700 px-5 py-2"
+            className="rounded-xl bg-slate-700 px-5 py-2 text-sm transition hover:bg-slate-600"
           >
             Cancelar
           </button>
 
           <button
+            type="button"
             onClick={handleSave}
-            className="rounded-xl bg-green-600 px-5 py-2 hover:bg-green-700"
+            disabled={!title.trim()}
+            className="rounded-xl bg-green-600 px-5 py-2 text-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Salvar
           </button>

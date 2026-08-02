@@ -11,7 +11,6 @@ export default function History({
   onLoadPrompt,
   onOpenLibrary,
 }) {
-  const [fullscreenImage, setFullscreenImage] = useState(null);
   const [compareMode, setCompareMode] = useState(false);
   const [compareIds, setCompareIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,10 +54,6 @@ export default function History({
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
       if (e.key === "Escape") {
-        if (fullscreenImage) {
-          setFullscreenImage(null);
-          return;
-        }
         if (clearModalOpen) {
           setClearModalOpen(false);
           return;
@@ -78,12 +73,9 @@ export default function History({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [fullscreenImage, clearModalOpen, page, totalPages]);
+  }, [clearModalOpen, page, totalPages]);
 
   // ── Funções ──
-  function handleImageClick(item) {
-    setFullscreenImage(item);
-  }
 
   function toggleCompare(id) {
     setCompareIds((prev) => {
@@ -335,7 +327,6 @@ export default function History({
             item={item}
             onRestore={onRestoreImage}
             onLoadPrompt={onLoadPrompt}
-            onImageClick={handleImageClick}
             onDelete={deleteItem}
             onToggleFavorite={toggleFavorite}
             compareMode={compareMode}
@@ -403,61 +394,6 @@ export default function History({
           {Math.min(startIndex + ITEMS_PER_PAGE, filteredHistory.length)} de{" "}
           {filteredHistory.length}
         </p>
-      )}
-
-      {/* ── Fullscreen Modal ── */}
-      {fullscreenImage && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setFullscreenImage(null)}
-        >
-          <button
-            onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-bold transition-colors z-10"
-          >
-            ✕
-          </button>
-
-          <img
-            src={fullscreenImage.imageUrl}
-            alt={fullscreenImage.prompt}
-            className="max-w-full max-h-[85vh] rounded-xl object-contain animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
-          />
-
-          <div
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-2xl w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-slate-900/90 backdrop-blur-md rounded-xl p-4 border border-slate-700/50">
-              <p className="text-white text-sm line-clamp-2 mb-2">
-                {fullscreenImage.prompt}
-              </p>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 text-xs text-slate-400">
-                  {fullscreenImage.model && (
-                    <span>Modelo: {fullscreenImage.model}</span>
-                  )}
-                  {fullscreenImage.seed != null && (
-                    <span>Seed: {fullscreenImage.seed}</span>
-                  )}
-                  {fullscreenImage.aspectRatio && (
-                    <span>Tamanho: {fullscreenImage.aspectRatio}</span>
-                  )}
-                </div>
-                <button
-                  onClick={() => {
-                    onLoadPrompt && onLoadPrompt(fullscreenImage);
-                    setFullscreenImage(null);
-                  }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition-all duration-200 shrink-0"
-                >
-                  📝 Usar prompt
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* ── Modal de confirmação ── */}

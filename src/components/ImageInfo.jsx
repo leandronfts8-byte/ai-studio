@@ -14,24 +14,39 @@ export default function ImageInfo({ settings }) {
     negativePrompt,
   } = settings;
 
-  const summary = `${style?.name || "-"} · ${resolution ? `${resolution}px` : "-"} · ${aspectRatio || "-"} · ${model || "-"} · ${seed || "-"}`;
+  const summary = `${style?.name || "-"} · ${
+    resolution ? `${resolution}px` : "-"
+  } · ${aspectRatio || "-"} · ${model || "-"} · ${seed || "-"}`;
 
   return (
-    <div className="glass rounded-2xl mt-4 overflow-hidden transition-all duration-300">
+    <div className="glass mt-4 overflow-hidden rounded-2xl transition-all duration-300">
+      {/* Cabeçalho */}
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/30 transition-colors"
+        className="w-full px-5 py-4 text-left transition-colors hover:bg-slate-800/30"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-300">
-            🖼️ Informações da Imagem
-          </span>
-        </div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-800/60 text-sm">
+              ℹ️
+            </span>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500">{summary}</span>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-300">
+                Informações da imagem
+              </p>
+
+              {!open && (
+                <p className="mt-0.5 truncate text-[11px] text-slate-600">
+                  {summary}
+                </p>
+              )}
+            </div>
+          </div>
+
           <span
-            className={`text-xs text-slate-400 transition-transform duration-200 ${
+            className={`shrink-0 text-xs text-slate-400 transition-transform duration-200 ${
               open ? "rotate-180" : ""
             }`}
           >
@@ -40,62 +55,79 @@ export default function ImageInfo({ settings }) {
         </div>
       </button>
 
+      {/* Conteúdo */}
       {open && (
         <div className="border-t border-slate-700/30 p-5 animate-slide-up">
-          <div className="mb-4">
-            <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider">
+          {/* Prompt */}
+          <div className="mb-5">
+            <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
               📝 Prompt
             </p>
-            <p className="text-sm text-slate-300 bg-slate-800/50 rounded-lg p-3 break-words leading-relaxed">
+
+            <p className="break-words rounded-xl border border-slate-700/30 bg-slate-800/40 p-3 text-sm leading-relaxed text-slate-300">
               {prompt || "-"}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">🎨 Estilo</p>
+          {/* Informações */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-slate-700/20 bg-slate-800/30 p-3">
+              <p className="mb-1 text-[11px] text-slate-500">🎨 Estilo</p>
+
               <p className="text-sm font-medium text-slate-200">
                 {style?.name || "-"}
               </p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">🤖 Modelo</p>
-              <p className="text-sm font-medium text-slate-200">
+
+            <div className="rounded-xl border border-slate-700/20 bg-slate-800/30 p-3">
+              <p className="mb-1 text-[11px] text-slate-500">🤖 Modelo</p>
+
+              <p className="text-sm font-medium capitalize text-slate-200">
                 {model || "-"}
               </p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">📐 Proporção</p>
+
+            <div className="rounded-xl border border-slate-700/20 bg-slate-800/30 p-3">
+              <p className="mb-1 text-[11px] text-slate-500">📐 Proporção</p>
+
               <p className="text-sm font-medium text-slate-200">
                 {aspectRatio || "-"}
               </p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">📏 Resolução</p>
+
+            <div className="rounded-xl border border-slate-700/20 bg-slate-800/30 p-3">
+              <p className="mb-1 text-[11px] text-slate-500">📏 Resolução</p>
+
               <p className="text-sm font-medium text-slate-200">
                 {resolution ? `${resolution}px` : "-"}
               </p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">🌱 Seed</p>
-              <p className="text-sm font-medium text-slate-200">
+
+            <div className="rounded-xl border border-slate-700/20 bg-slate-800/30 p-3">
+              <p className="mb-1 text-[11px] text-slate-500">🌱 Seed</p>
+
+              <p className="break-words text-sm font-medium text-slate-200">
                 {seed || "-"}
               </p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">📅 Gerada em</p>
-              <p className="text-sm font-medium text-slate-200">
+
+            <div className="rounded-xl border border-slate-700/20 bg-slate-800/30 p-3">
+              <p className="mb-1 text-[11px] text-slate-500">📅 Gerada em</p>
+
+              <p className="break-words text-sm font-medium text-slate-200">
                 {createdAt || "-"}
               </p>
             </div>
           </div>
 
+          {/* Prompt negativo */}
           {negativePrompt && (
-            <div className="mt-4">
-              <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider">
-                🚫 Prompt Negativo
+            <div className="mt-5">
+              <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                🚫 Prompt negativo
               </p>
-              <p className="text-sm text-slate-400 bg-slate-800/50 rounded-lg p-3 break-words">
+
+              <p className="break-words rounded-xl border border-slate-700/30 bg-slate-800/40 p-3 text-sm leading-relaxed text-slate-400">
                 {negativePrompt}
               </p>
             </div>
