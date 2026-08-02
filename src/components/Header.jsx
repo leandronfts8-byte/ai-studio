@@ -29,13 +29,17 @@ export default function Header({ totalGenerated = 0 }) {
     >
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">AI Studio</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-3xl">🎨</span>
+
+            <h1 className="text-3xl font-bold gradient-text">AI Studio</h1>
+          </div>
           <p
             className={`text-sm mt-0.5 transition-colors duration-300 ${
               isDark ? "text-slate-400" : "text-slate-500"
             }`}
           >
-            Gere imagens incríveis
+            Seu estúdio de criação com IA
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -52,7 +56,7 @@ export default function Header({ totalGenerated = 0 }) {
                   isDark ? "bg-blue-400" : "bg-blue-500"
                 }`}
               />
-              {totalGenerated} geradas
+              {totalGenerated} imagens
             </span>
           )}
 
